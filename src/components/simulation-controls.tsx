@@ -1,78 +1,121 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Bot, Loader2 } from 'lucide-react';
+import { Bot, Loader2, RotateCcw, Sparkles } from 'lucide-react';
 import { handleNaturalLanguageQuery } from '@/lib/actions';
 import type { SimulationParameters, SimulationResult } from '@/lib/types';
+import { DEFAULT_PARAMETERS } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from './ui/scroll-area';
 
 type SimulationControlsProps = {
-  onSimulate: (result: SimulationResult | null, loading: boolean, error: string | null) => void;
+  onSimulate: (result: SimulationResult | null, loading: boolean, error: string | null, params?: SimulationParameters) => void;
   isLoading: boolean;
 };
 
+function SliderControl({ label, value, onChange, min = 0, max = 100, step = 1, unit = '', formatValue }: {
+  label: string; value: number[]; onChange: (v: number[]) => void;
+  min?: number; max?: number; step?: number; unit?: string;
+  formatValue?: (v: number) => string;
+}) {
+  const displayVal = formatValue ? formatValue(value[0]) : `${value[0]}${unit}`;
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between items-center">
+        <Label className="text-[11px] text-foreground/70">{label}</Label>
+        <span className="text-[10px] font-mono text-primary/80 bg-primary/5 px-1.5 py-0.5 rounded">{displayVal}</span>
+      </div>
+      <Slider defaultValue={value} min={min} max={max} step={step} onValueChange={onChange} className="py-0.5" />
+    </div>
+  );
+}
+
 export default function SimulationControls({ onSimulate, isLoading }: SimulationControlsProps) {
-  // --- STATE FOR ALL SLIDERS ---
-
-  // Operational Parameters
-  const [productionCapacity, setProductionCapacity] = useState([80]);
-  const [inventoryTurnover, setInventoryTurnover] = useState([5]);
-  const [supplierLeadTime, setSupplierLeadTime] = useState([30]);
-  const [cogsMaterials, setCogsMaterials] = useState([40]);
-  const [cogsLabor, setCogsLabor] = useState([30]);
-  const [cogsOverhead, setCogsOverhead] = useState([30]);
-  const [salaryInflation, setSalaryInflation] = useState([3]);
-  const [headcountChange, setHeadcountChange] = useState([0]);
-  const [capexMaintenance, setCapexMaintenance] = useState([1000000]);
-  const [capexGrowth, setCapexGrowth] = useState([500000]);
-  const [depreciation, setDepreciation] = useState([500000]);
-  const [rdExpenditure, setRdExpenditure] = useState([800000]);
-  const [salesConversion, setSalesConversion] = useState([10]);
-  const [customerChurn, setCustomerChurn] = useState([5]);
-  const [arDays, setArDays] = useState([45]);
-  const [apDays, setApDays] = useState([30]);
-  const [inventoryDays, setInventoryDays] = useState([60]);
-
-  // Pricing & Revenue Mechanics
-  const [discount, setDiscount] = useState([5]);
-  const [newProductImpact, setNewProductImpact] = useState([0]);
-
-  // Micro-Economic Parameters
-  const [marketDemand, setMarketDemand] = useState([95]);
-  const [competitionIndex, setCompetitionIndex] = useState([75]);
-  const [commodityIndex, setCommodityIndex] = useState([100]);
-  const [supplyDisruption, setSupplyDisruption] = useState([2]);
-  const [freightRates, setFreightRates] = useState([100]);
-  const [customerSentiment, setCustomerSentiment] = useState([100]);
-  
-  // Macro-Economic Parameters
-  const [inflationRate, setInflationRate] = useState([2.5]);
-  const [interestRate, setInterestRate] = useState([5.5]);
-  const [unemploymentRate, setUnemploymentRate] = useState([4]);
-  const [gdpGrowth, setGdpGrowth] = useState([2.1]);
-  const [consumerConfidence, setConsumerConfidence] = useState([100]);
-  const [pmi, setPmi] = useState([50]);
-  const [forexRate, setForexRate] = useState([90.58]);
-
-
-  // Financial Market Parameters
-  const [bondYieldSpread, setBondYieldSpread] = useState([0.762]);
-  const [creditSpread, setCreditSpread] = useState([2]);
-
-  // Risk & Stress Testing
-  const [revenueShock, setRevenueShock] = useState([0]);
-  const [cyberAttackDowntime, setCyberAttackDowntime] = useState([0]);
-  const [esgPenalty, setEsgPenalty] = useState([0]);
-
+  const [productionCapacity, setProductionCapacity] = useState([DEFAULT_PARAMETERS.productionCapacity]);
+  const [inventoryTurnover, setInventoryTurnover] = useState([DEFAULT_PARAMETERS.inventoryTurnover]);
+  const [supplierLeadTime, setSupplierLeadTime] = useState([DEFAULT_PARAMETERS.supplierLeadTime]);
+  const [cogsMaterials, setCogsMaterials] = useState([DEFAULT_PARAMETERS.cogsMaterials]);
+  const [cogsLabor, setCogsLabor] = useState([DEFAULT_PARAMETERS.cogsLabor]);
+  const [cogsOverhead, setCogsOverhead] = useState([DEFAULT_PARAMETERS.cogsOverhead]);
+  const [salaryInflation, setSalaryInflation] = useState([DEFAULT_PARAMETERS.salaryInflation]);
+  const [headcountChange, setHeadcountChange] = useState([DEFAULT_PARAMETERS.headcountChange]);
+  const [capexMaintenance, setCapexMaintenance] = useState([DEFAULT_PARAMETERS.capexMaintenance]);
+  const [capexGrowth, setCapexGrowth] = useState([DEFAULT_PARAMETERS.capexGrowth]);
+  const [depreciation, setDepreciation] = useState([DEFAULT_PARAMETERS.depreciation]);
+  const [rdExpenditure, setRdExpenditure] = useState([DEFAULT_PARAMETERS.rdExpenditure]);
+  const [salesConversion, setSalesConversion] = useState([DEFAULT_PARAMETERS.salesConversion]);
+  const [customerChurn, setCustomerChurn] = useState([DEFAULT_PARAMETERS.customerChurn]);
+  const [arDays, setArDays] = useState([DEFAULT_PARAMETERS.arDays]);
+  const [apDays, setApDays] = useState([DEFAULT_PARAMETERS.apDays]);
+  const [inventoryDays, setInventoryDays] = useState([DEFAULT_PARAMETERS.inventoryDays]);
+  const [discount, setDiscount] = useState([DEFAULT_PARAMETERS.discount]);
+  const [newProductImpact, setNewProductImpact] = useState([DEFAULT_PARAMETERS.newProductImpact]);
+  const [marketDemand, setMarketDemand] = useState([DEFAULT_PARAMETERS.marketDemand]);
+  const [competitionIndex, setCompetitionIndex] = useState([DEFAULT_PARAMETERS.competitionIndex]);
+  const [commodityIndex, setCommodityIndex] = useState([DEFAULT_PARAMETERS.commodityIndex]);
+  const [supplyDisruption, setSupplyDisruption] = useState([DEFAULT_PARAMETERS.supplyDisruption]);
+  const [freightRates, setFreightRates] = useState([DEFAULT_PARAMETERS.freightRates]);
+  const [customerSentiment, setCustomerSentiment] = useState([DEFAULT_PARAMETERS.customerSentiment]);
+  const [inflationRate, setInflationRate] = useState([DEFAULT_PARAMETERS.inflationRate]);
+  const [interestRate, setInterestRate] = useState([DEFAULT_PARAMETERS.interestRate]);
+  const [unemploymentRate, setUnemploymentRate] = useState([DEFAULT_PARAMETERS.unemploymentRate]);
+  const [gdpGrowth, setGdpGrowth] = useState([DEFAULT_PARAMETERS.gdpGrowth]);
+  const [consumerConfidence, setConsumerConfidence] = useState([DEFAULT_PARAMETERS.consumerConfidence]);
+  const [pmi, setPmi] = useState([DEFAULT_PARAMETERS.pmi]);
+  const [forexRate, setForexRate] = useState([DEFAULT_PARAMETERS.forexRate]);
+  const [bondYieldSpread, setBondYieldSpread] = useState([DEFAULT_PARAMETERS.bondYieldSpread]);
+  const [creditSpread, setCreditSpread] = useState([DEFAULT_PARAMETERS.creditSpread]);
+  const [revenueShock, setRevenueShock] = useState([DEFAULT_PARAMETERS.revenueShock]);
+  const [cyberAttackDowntime, setCyberAttackDowntime] = useState([DEFAULT_PARAMETERS.cyberAttackDowntime]);
+  const [esgPenalty, setEsgPenalty] = useState([DEFAULT_PARAMETERS.esgPenalty]);
   const [naturalQuery, setNaturalQuery] = useState('');
   const { toast } = useToast();
+
+  const resetAll = () => {
+    setProductionCapacity([DEFAULT_PARAMETERS.productionCapacity]);
+    setInventoryTurnover([DEFAULT_PARAMETERS.inventoryTurnover]);
+    setSupplierLeadTime([DEFAULT_PARAMETERS.supplierLeadTime]);
+    setCogsMaterials([DEFAULT_PARAMETERS.cogsMaterials]);
+    setCogsLabor([DEFAULT_PARAMETERS.cogsLabor]);
+    setCogsOverhead([DEFAULT_PARAMETERS.cogsOverhead]);
+    setSalaryInflation([DEFAULT_PARAMETERS.salaryInflation]);
+    setHeadcountChange([DEFAULT_PARAMETERS.headcountChange]);
+    setCapexMaintenance([DEFAULT_PARAMETERS.capexMaintenance]);
+    setCapexGrowth([DEFAULT_PARAMETERS.capexGrowth]);
+    setDepreciation([DEFAULT_PARAMETERS.depreciation]);
+    setRdExpenditure([DEFAULT_PARAMETERS.rdExpenditure]);
+    setSalesConversion([DEFAULT_PARAMETERS.salesConversion]);
+    setCustomerChurn([DEFAULT_PARAMETERS.customerChurn]);
+    setArDays([DEFAULT_PARAMETERS.arDays]);
+    setApDays([DEFAULT_PARAMETERS.apDays]);
+    setInventoryDays([DEFAULT_PARAMETERS.inventoryDays]);
+    setDiscount([DEFAULT_PARAMETERS.discount]);
+    setNewProductImpact([DEFAULT_PARAMETERS.newProductImpact]);
+    setMarketDemand([DEFAULT_PARAMETERS.marketDemand]);
+    setCompetitionIndex([DEFAULT_PARAMETERS.competitionIndex]);
+    setCommodityIndex([DEFAULT_PARAMETERS.commodityIndex]);
+    setSupplyDisruption([DEFAULT_PARAMETERS.supplyDisruption]);
+    setFreightRates([DEFAULT_PARAMETERS.freightRates]);
+    setCustomerSentiment([DEFAULT_PARAMETERS.customerSentiment]);
+    setInflationRate([DEFAULT_PARAMETERS.inflationRate]);
+    setInterestRate([DEFAULT_PARAMETERS.interestRate]);
+    setUnemploymentRate([DEFAULT_PARAMETERS.unemploymentRate]);
+    setGdpGrowth([DEFAULT_PARAMETERS.gdpGrowth]);
+    setConsumerConfidence([DEFAULT_PARAMETERS.consumerConfidence]);
+    setPmi([DEFAULT_PARAMETERS.pmi]);
+    setForexRate([DEFAULT_PARAMETERS.forexRate]);
+    setBondYieldSpread([DEFAULT_PARAMETERS.bondYieldSpread]);
+    setCreditSpread([DEFAULT_PARAMETERS.creditSpread]);
+    setRevenueShock([DEFAULT_PARAMETERS.revenueShock]);
+    setCyberAttackDowntime([DEFAULT_PARAMETERS.cyberAttackDowntime]);
+    setEsgPenalty([DEFAULT_PARAMETERS.esgPenalty]);
+    setNaturalQuery('');
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -116,353 +159,150 @@ export default function SimulationControls({ onSimulate, isLoading }: Simulation
       cyberAttackDowntime: cyberAttackDowntime[0],
       esgPenalty: esgPenalty[0],
       forexRate: forexRate[0],
-      
     };
-    
+
     const result = await handleNaturalLanguageQuery(naturalQuery, sliderParameters);
 
     if (result.error) {
-      onSimulate(null, false, result.error);
-       toast({
-        variant: "destructive",
-        title: "Simulation Failed",
-        description: result.error,
-      });
+      onSimulate(null, false, result.error, sliderParameters);
+      toast({ variant: "destructive", title: "Simulation Failed", description: result.error });
     } else {
-      onSimulate(result.data, false, null);
+      onSimulate(result.data, false, null, sliderParameters);
     }
   };
 
   return (
-    <Card className="glass flex flex-col">
-      <CardHeader>
-        <CardTitle>Create Simulation</CardTitle>
-        <CardDescription>Adjust parameters or use natural language to run a simulation.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-6 overflow-hidden">
-        <ScrollArea className="flex-1 pr-4">
-          <Accordion type="multiple" defaultValue={['operational']} className="w-full">
-            <AccordionItem value="operational">
-              <AccordionTrigger>Operational Parameters</AccordionTrigger>
-              <AccordionContent className="space-y-4 pt-4">
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Production Capacity (%)</Label>
-                    <span className="text-sm font-mono">{productionCapacity[0]}%</span>
-                  </div>
-                  <Slider defaultValue={productionCapacity} max={100} step={1} onValueChange={setProductionCapacity} />
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Simulation Engine</span>
+        </div>
+        <button onClick={resetAll} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
+          <RotateCcw className="h-3 w-3" /> Reset
+        </button>
+      </div>
+
+      {/* Scrollable Controls */}
+      <ScrollArea className="flex-1 pr-2">
+        <Accordion type="multiple" defaultValue={['ai-query']} className="w-full space-y-1">
+          {/* AI Query Section - Always visible at top */}
+          <AccordionItem value="ai-query" className="border-border/20 glass-subtle rounded-lg px-3">
+            <AccordionTrigger className="text-xs font-semibold py-2 hover:no-underline">
+              <span className="flex items-center gap-2">
+                <Bot className="h-3.5 w-3.5 text-primary" /> AI Scenario Query
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="pb-3">
+              <Textarea
+                placeholder="e.g., What if GDP grows 3% and we acquire a competitor for $5M?"
+                value={naturalQuery}
+                onChange={(e) => setNaturalQuery(e.target.value)}
+                className="min-h-[60px] text-xs bg-background/50 border-border/30 resize-none"
+              />
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="operational" className="border-border/20 glass-subtle rounded-lg px-3">
+            <AccordionTrigger className="text-xs font-semibold py-2 hover:no-underline">Operational</AccordionTrigger>
+            <AccordionContent className="space-y-3 pt-2 pb-3">
+              <SliderControl label="Production Capacity" value={productionCapacity} onChange={setProductionCapacity} max={100} unit="%" />
+              <SliderControl label="Inventory Turnover" value={inventoryTurnover} onChange={setInventoryTurnover} min={1} max={20} step={0.1} />
+              <SliderControl label="Supplier Lead Time" value={supplierLeadTime} onChange={setSupplierLeadTime} max={90} unit=" days" />
+              <div className="space-y-1.5">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">COGS Breakdown</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <SliderControl label="Materials" value={cogsMaterials} onChange={setCogsMaterials} max={100} unit="%" />
+                  <SliderControl label="Labor" value={cogsLabor} onChange={setCogsLabor} max={100} unit="%" />
+                  <SliderControl label="Overhead" value={cogsOverhead} onChange={setCogsOverhead} max={100} unit="%" />
                 </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Inventory Turnover</Label>
-                    <span className="text-sm font-mono">{inventoryTurnover[0]}</span>
-                  </div>
-                  <Slider defaultValue={inventoryTurnover} max={20} step={0.5} onValueChange={setInventoryTurnover} />
+              </div>
+              <SliderControl label="Salary Inflation" value={salaryInflation} onChange={setSalaryInflation} max={10} step={0.1} unit="%" />
+              <SliderControl label="Headcount Change" value={headcountChange} onChange={setHeadcountChange} min={-50} max={50} unit="%" />
+              <SliderControl label="Maintenance Capex" value={capexMaintenance} onChange={setCapexMaintenance} max={5000000} step={100000} formatValue={(v) => `${(v/1e6).toFixed(1)}M`} />
+              <SliderControl label="Growth Capex" value={capexGrowth} onChange={setCapexGrowth} max={10000000} step={100000} formatValue={(v) => `${(v/1e6).toFixed(1)}M`} />
+              <SliderControl label="Depreciation (D&A)" value={depreciation} onChange={setDepreciation} max={5000000} step={100000} formatValue={(v) => `${(v/1e6).toFixed(1)}M`} />
+              <SliderControl label="R&D Expenditure" value={rdExpenditure} onChange={setRdExpenditure} max={5000000} step={100000} formatValue={(v) => `${(v/1e6).toFixed(1)}M`} />
+              <SliderControl label="Sales Conversion" value={salesConversion} onChange={setSalesConversion} max={100} unit="%" />
+              <SliderControl label="Customer Churn" value={customerChurn} onChange={setCustomerChurn} max={100} unit="%" />
+              <div className="space-y-1.5">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Working Capital (Days)</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <SliderControl label="AR (DSO)" value={arDays} onChange={setArDays} max={120} />
+                  <SliderControl label="AP (DPO)" value={apDays} onChange={setApDays} max={120} />
+                  <SliderControl label="Inv (DIO)" value={inventoryDays} onChange={setInventoryDays} max={180} />
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Supplier Lead Times (days)</Label>
-                    <span className="text-sm font-mono">{supplierLeadTime[0]}</span>
-                  </div>
-                  <Slider defaultValue={supplierLeadTime} max={90} step={1} onValueChange={setSupplierLeadTime} />
-                </div>
-                <div className="space-y-2">
-                  <Label>COGS Breakdown (%)</Label>
-                  <div className='flex gap-4'>
-                    <div className='flex-1 space-y-1'>
-                      <div className="flex justify-between text-xs">
-                        <Label>Materials</Label>
-                        <span className="font-mono">{cogsMaterials[0]}%</span>
-                      </div>
-                      <Slider defaultValue={cogsMaterials} max={100} step={1} onValueChange={setCogsMaterials} />
-                    </div>
-                    <div className='flex-1 space-y-1'>
-                       <div className="flex justify-between text-xs">
-                        <Label>Labor</Label>
-                        <span className="font-mono">{cogsLabor[0]}%</span>
-                      </div>
-                      <Slider defaultValue={cogsLabor} max={100} step={1} onValueChange={setCogsLabor} />
-                    </div>
-                    <div className='flex-1 space-y-1'>
-                       <div className="flex justify-between text-xs">
-                        <Label>Overhead</Label>
-                        <span className="font-mono">{cogsOverhead[0]}%</span>
-                      </div>
-                      <Slider defaultValue={cogsOverhead} max={100} step={1} onValueChange={setCogsOverhead} />
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Salary Inflation (%)</Label>
-                    <span className="text-sm font-mono">{salaryInflation[0]}%</span>
-                  </div>
-                  <Slider defaultValue={salaryInflation} max={10} step={0.1} onValueChange={setSalaryInflation} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Headcount Change (%)</Label>
-                    <span className="text-sm font-mono">{headcountChange[0]}%</span>
-                  </div>
-                  <Slider defaultValue={headcountChange} min={-50} max={50} step={1} onValueChange={setHeadcountChange} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Maintenance Capex</Label>
-                    <span className="text-sm font-mono">{(capexMaintenance[0]/1000000).toFixed(1)}M</span>
-                  </div>
-                  <Slider defaultValue={capexMaintenance} min={0} max={5000000} step={100000} onValueChange={setCapexMaintenance} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Growth Capex</Label>
-                    <span className="text-sm font-mono">{(capexGrowth[0]/1000000).toFixed(1)}M</span>
-                  </div>
-                  <Slider defaultValue={capexGrowth} min={0} max={10000000} step={100000} onValueChange={setCapexGrowth} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Depreciation Schedule</Label>
-                    <span className="text-sm font-mono">{(depreciation[0]/1000000).toFixed(1)}M</span>
-                  </div>
-                  <Slider defaultValue={depreciation} min={0} max={2000000} step={50000} onValueChange={setDepreciation} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>R&D Expenditure</Label>
-                    <span className="text-sm font-mono">{(rdExpenditure[0]/1000000).toFixed(1)}M</span>
-                  </div>
-                  <Slider defaultValue={rdExpenditure} min={0} max={5000000} step={100000} onValueChange={setRdExpenditure} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Sales Pipeline Conversion (%)</Label>
-                    <span className="text-sm font-mono">{salesConversion[0]}%</span>
-                  </div>
-                  <Slider defaultValue={salesConversion} max={100} step={1} onValueChange={setSalesConversion} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Customer Churn Probability (%)</Label>
-                    <span className="text-sm font-mono">{customerChurn[0]}%</span>
-                  </div>
-                  <Slider defaultValue={customerChurn} max={100} step={1} onValueChange={setCustomerChurn} />
-                </div>
-                <div className="space-y-2">
-                  <Label>AR/AP/Inventory Days</Label>
-                  <div className='flex gap-4'>
-                    <div className='flex-1 space-y-1'>
-                      <div className="flex justify-between text-xs">
-                        <Label>AR Days (DSO)</Label>
-                        <span className="font-mono">{arDays[0]}</span>
-                      </div>
-                      <Slider defaultValue={arDays} max={120} step={1} onValueChange={setArDays} />
-                    </div>
-                    <div className='flex-1 space-y-1'>
-                       <div className="flex justify-between text-xs">
-                        <Label>AP Days (DPO)</Label>
-                        <span className="font-mono">{apDays[0]}</span>
-                      </div>
-                      <Slider defaultValue={apDays} max={120} step={1} onValueChange={setApDays} />
-                    </div>
-                    <div className='flex-1 space-y-1'>
-                       <div className="flex justify-between text-xs">
-                        <Label>Inventory Days (DIO)</Label>
-                        <span className="font-mono">{inventoryDays[0]}</span>
-                      </div>
-                      <Slider defaultValue={inventoryDays} max={180} step={1} onValueChange={setInventoryDays} />
-                    </div>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="pricing-revenue">
-              <AccordionTrigger>Pricing & Revenue Mechanics</AccordionTrigger>
-              <AccordionContent className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Discount Strategy Change (%)</Label>
-                    <span className="text-sm font-mono">{discount[0]}%</span>
-                  </div>
-                  <Slider defaultValue={discount} max={50} step={1} onValueChange={setDiscount} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>New Product Launch Impact (M)</Label>
-                    <span className="text-sm font-mono">{(newProductImpact[0]/1000000).toFixed(1)}M</span>
-                  </div>
-                  <Slider defaultValue={newProductImpact} max={50000000} step={1000000} onValueChange={setNewProductImpact} />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-             <AccordionItem value="micro-economic">
-              <AccordionTrigger>Micro-Economic Parameters</AccordionTrigger>
-              <AccordionContent className="space-y-4 pt-4">
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Market Demand Index</Label>
-                    <span className="text-sm font-mono">{marketDemand[0]}</span>
-                  </div>
-                  <Slider defaultValue={marketDemand} max={120} step={1} onValueChange={setMarketDemand} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Competition Index</Label>
-                    <span className="text-sm font-mono">{competitionIndex[0]}</span>
-                  </div>
-                  <Slider defaultValue={competitionIndex} max={100} step={1} onValueChange={setCompetitionIndex} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Commodity Index</Label>
-                    <span className="text-sm font-mono">{commodityIndex[0]}</span>
-                  </div>
-                  <Slider defaultValue={commodityIndex} min={50} max={150} step={1} onValueChange={setCommodityIndex} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Supply Chain Disruption Probability (%)</Label>
-                    <span className="text-sm font-mono">{supplyDisruption[0]}%</span>
-                  </div>
-                  <Slider defaultValue={supplyDisruption} max={20} step={1} onValueChange={setSupplyDisruption} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Freight Rate Changes (Index)</Label>
-                    <span className="text-sm font-mono">{freightRates[0]}</span>
-                  </div>
-                  <Slider defaultValue={freightRates} min={50} max={200} step={1} onValueChange={setFreightRates} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Customer Sentiment Index</Label>
-                    <span className="text-sm font-mono">{customerSentiment[0]}</span>
-                  </div>
-                  <Slider defaultValue={customerSentiment} min={50} max={150} step={1} onValueChange={setCustomerSentiment} />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="macro-economic">
-              <AccordionTrigger>Macro-Economic Parameters</AccordionTrigger>
-              <AccordionContent className="space-y-4 pt-4">
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Inflation Rate (%)</Label>
-                     <span className="text-sm font-mono">{inflationRate[0]}%</span>
-                  </div>
-                  <Slider defaultValue={inflationRate} max={10} step={0.1} onValueChange={setInflationRate} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Interest Rate (%)</Label>
-                     <span className="text-sm font-mono">{interestRate[0]}%</span>
-                  </div>
-                  <Slider defaultValue={interestRate} max={15} step={0.1} onValueChange={setInterestRate} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Unemployment Rate (%)</Label>
-                    <span className="text-sm font-mono">{unemploymentRate[0]}%</span>
-                  </div>
-                  <Slider defaultValue={unemploymentRate} max={15} step={0.1} onValueChange={setUnemploymentRate} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>GDP Growth (%)</Label>
-                    <span className="text-sm font-mono">{gdpGrowth[0]}%</span>
-                  </div>
-                  <Slider defaultValue={gdpGrowth} max={10} step={0.1} onValueChange={setGdpGrowth} />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Consumer Confidence Index</Label>
-                    <span className="text-sm font-mono">{consumerConfidence[0]}</span>
-                  </div>
-                  <Slider defaultValue={consumerConfidence} min={50} max={150} step={1} onValueChange={setConsumerConfidence} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>PMI (Purchasing Managers Index)</Label>
-                    <span className="text-sm font-mono">{pmi[0]}</span>
-                  </div>
-                  <Slider defaultValue={pmi} min={30} max={70} step={1} onValueChange={setPmi} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Forex Rate (USD vs INR)</Label>
-                    <span className="text-sm font-mono">{forexRate[0]}</span>
-                  </div>
-                  <Slider defaultValue={forexRate} min={0} max={120} step={0.1} onValueChange={setForexRate} />
-                </div>                
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="financial-market">
-              <AccordionTrigger>Financial Market Parameters</AccordionTrigger>
-              <AccordionContent className="space-y-4 pt-4">
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Bond Yield Curve Spread (2Y/10Y %)</Label>
-                     <span className="text-sm font-mono">{bondYieldSpread[0]}%</span>
-                  </div>
-                  <Slider defaultValue={bondYieldSpread} min={-1} max={5} step={0.01} onValueChange={setBondYieldSpread} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Credit Spreads (%)</Label>
-                     <span className="text-sm font-mono">{creditSpread[0]}%</span>
-                  </div>
-                  <Slider defaultValue={creditSpread} max={10} step={0.1} onValueChange={setCreditSpread} />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-             <AccordionItem value="risk-stress">
-              <AccordionTrigger>Risk & Stress Testing Parameters</AccordionTrigger>
-              <AccordionContent className="space-y-4 pt-4">
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Revenue Shock (%)</Label>
-                     <span className="text-sm font-mono">{revenueShock[0]}%</span>
-                  </div>
-                  <Slider defaultValue={revenueShock} min={-50} max={50} step={5} onValueChange={setRevenueShock} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>Cyber-Attack Downtime (days)</Label>
-                     <span className="text-sm font-mono">{cyberAttackDowntime[0]}</span>
-                  </div>
-                  <Slider defaultValue={cyberAttackDowntime} max={30} step={1} onValueChange={setCyberAttackDowntime} />
-                </div>
-                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label>ESG Penalties / Carbon Cost</Label>
-                    <span className="text-sm font-mono">{(esgPenalty[0]/1000000).toFixed(1)}M</span>
-                  </div>
-                  <Slider defaultValue={esgPenalty} max={5000000} step={100000} onValueChange={setEsgPenalty} />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </ScrollArea>
-        
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4 border-t">
-          <div className="space-y-2">
-            <Label htmlFor="natural-language" className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-primary" />
-              <span>Natural Language Simulation</span>
-            </Label>
-            <Textarea 
-              id="natural-language"
-              placeholder="e.g., What's the impact if GDP growth increases by only 3% and we acquire a competitor?"
-              value={naturalQuery}
-              onChange={(e) => setNaturalQuery(e.target.value)}
-              className="min-h-[100px] bg-background/50"
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <Loader2 className="animate-spin" /> : 'Run AI Simulation'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="pricing" className="border-border/20 glass-subtle rounded-lg px-3">
+            <AccordionTrigger className="text-xs font-semibold py-2 hover:no-underline">Pricing & Revenue</AccordionTrigger>
+            <AccordionContent className="space-y-3 pt-2 pb-3">
+              <SliderControl label="Discount Strategy" value={discount} onChange={setDiscount} max={50} unit="%" />
+              <SliderControl label="New Product Impact" value={newProductImpact} onChange={setNewProductImpact} max={50000000} step={1000000} formatValue={(v) => `${(v/1e6).toFixed(1)}M`} />
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="micro" className="border-border/20 glass-subtle rounded-lg px-3">
+            <AccordionTrigger className="text-xs font-semibold py-2 hover:no-underline">Micro-Economic</AccordionTrigger>
+            <AccordionContent className="space-y-3 pt-2 pb-3">
+              <SliderControl label="Market Demand Index" value={marketDemand} onChange={setMarketDemand} max={150} />
+              <SliderControl label="Competition Index" value={competitionIndex} onChange={setCompetitionIndex} max={100} />
+              <SliderControl label="Commodity Index" value={commodityIndex} onChange={setCommodityIndex} min={50} max={150} />
+              <SliderControl label="Supply Disruption" value={supplyDisruption} onChange={setSupplyDisruption} max={20} unit="%" />
+              <SliderControl label="Freight Rates Index" value={freightRates} onChange={setFreightRates} min={50} max={200} />
+              <SliderControl label="Customer Sentiment" value={customerSentiment} onChange={setCustomerSentiment} min={50} max={150} />
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="macro" className="border-border/20 glass-subtle rounded-lg px-3">
+            <AccordionTrigger className="text-xs font-semibold py-2 hover:no-underline">Macro-Economic</AccordionTrigger>
+            <AccordionContent className="space-y-3 pt-2 pb-3">
+              <SliderControl label="Inflation Rate" value={inflationRate} onChange={setInflationRate} max={10} step={0.1} unit="%" />
+              <SliderControl label="Interest Rate" value={interestRate} onChange={setInterestRate} max={15} step={0.1} unit="%" />
+              <SliderControl label="Unemployment Rate" value={unemploymentRate} onChange={setUnemploymentRate} max={15} step={0.1} unit="%" />
+              <SliderControl label="GDP Growth" value={gdpGrowth} onChange={setGdpGrowth} min={-5} max={10} step={0.1} unit="%" />
+              <SliderControl label="Consumer Confidence" value={consumerConfidence} onChange={setConsumerConfidence} min={50} max={150} />
+              <SliderControl label="PMI" value={pmi} onChange={setPmi} min={30} max={70} />
+              <SliderControl label="Forex Rate (USD/INR)" value={forexRate} onChange={setForexRate} min={60} max={120} step={0.1} />
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="financial" className="border-border/20 glass-subtle rounded-lg px-3">
+            <AccordionTrigger className="text-xs font-semibold py-2 hover:no-underline">Financial Markets</AccordionTrigger>
+            <AccordionContent className="space-y-3 pt-2 pb-3">
+              <SliderControl label="Bond Yield Spread (2Y/10Y)" value={bondYieldSpread} onChange={setBondYieldSpread} min={-1} max={5} step={0.01} unit="%" />
+              <SliderControl label="Credit Spreads" value={creditSpread} onChange={setCreditSpread} max={10} step={0.1} unit="%" />
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="risk" className="border-border/20 glass-subtle rounded-lg px-3">
+            <AccordionTrigger className="text-xs font-semibold py-2 hover:no-underline">Risk & Stress Test</AccordionTrigger>
+            <AccordionContent className="space-y-3 pt-2 pb-3">
+              <SliderControl label="Revenue Shock" value={revenueShock} onChange={setRevenueShock} min={-50} max={50} step={5} unit="%" />
+              <SliderControl label="Cyber-Attack Downtime" value={cyberAttackDowntime} onChange={setCyberAttackDowntime} max={30} unit=" days" />
+              <SliderControl label="ESG Penalties" value={esgPenalty} onChange={setEsgPenalty} max={5000000} step={100000} formatValue={(v) => `${(v/1e6).toFixed(1)}M`} />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </ScrollArea>
+
+      {/* Submit Button */}
+      <form onSubmit={handleSubmit} className="pt-3 border-t border-border/20">
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold text-xs h-9"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <><Loader2 className="animate-spin h-3.5 w-3.5 mr-2" /> Running Simulation...</>
+          ) : (
+            <><Sparkles className="h-3.5 w-3.5 mr-2" /> Run AI Simulation</>
+          )}
+        </Button>
+      </form>
+    </div>
   );
 }
